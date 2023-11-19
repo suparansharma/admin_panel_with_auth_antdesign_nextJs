@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, Layout, Modal, Row, Table, Tag, theme } from 'antd';
 import { faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Axios from './../../../utils/axios';
 import { DeleteOutlined, EditOutlined, ExclamationCircleFilled, EyeOutlined } from '@ant-design/icons';
-
+import DataTable from 'react-data-table-component';
+import ProductForm from './form/ProductForm'
 
 const Products = () => {
   const {
@@ -15,96 +16,152 @@ const Products = () => {
   const { http } = Axios();
   React.useEffect(() => {
     const timeout = setTimeout(() => {
-        fetchItemList();
+      fetchItemList();
     });
     return () => clearTimeout(timeout);
-}, []);
+  }, []);
 
-//Fetch List Data for datatable
+  //Fetch List Data for datatable
 
-const[productList,setProductList] = useState([])
+  const [productList, setProductList] = useState([]);
+  const [data, setData] = useState([]);
+  const [search, setSearch] = useState("");
 
-const fetchItemList = async () => {
+  const fetchItemList = async () => {
 
     let isSubscribed = true;
     let formData = {
-        action: "profitLoss",
+      action: "profitLoss",
 
     }
     await http.get(`${process.env.NEXT_PUBLIC_DOMAIN}/api/list`)
-        .then((res) => {
-            if (isSubscribed) {
-                console.log("profitLoss", res?.data);
-                setProductList(res?.data);
-                
+      .then((res) => {
+        if (isSubscribed) {
+          console.log("profitLoss", res?.data);
+          setProductList(res?.data);
+          setData(res?.data);
 
-            }
-        })
-        .catch((err) => {
-            console.log("Server Error ~!")
-        });
+
+        }
+      })
+      .catch((err) => {
+        console.log("Server Error ~!")
+      });
 
     return () => isSubscribed = false;
-};
+  };
+
+
+  const reFetchHandler = (isRender) => {
+    if (isRender) fetchItemList();
+  };
 
 
 
-const columns = [
-  {
-    title: 'SL',
-    fixed: 'left',
-    render: (text, record, index) => index + 1
-  },
-  {
-    title: 'Product Code',
-    dataIndex: 'id',
-    // fixed: 'left',
-  },
-  {
-    title: 'Name',
-    dataIndex: 'name',
-  },
-  {
-    title: 'Status',
-    dataIndex: 'status',
-    render: (status) => (
-      status ? <Tag color='green'>ACTIVE</Tag> : <Tag color='volcano'>INACTIVE</Tag>
-    ),
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    fixed: 'right',
-    width: 100,
-    render: (row) => actionButton(row), // You need to define actionButton function
-  },
-];
+
+  const columns = [
+    {
+      name: <span className='fw-bold' >SL</span>,
+      selector: (row, index) => index + 1,
+      width: "10%"
+    },
+
+    {
+      name: 'Name',
+      selector: row => row.name,
+      sortable: true,
+    },
+    {
+      name: 'Price',
+      selector: row => row.price,
+      sortable: true,
+    },
 
 
-const actionButton = (row) => {
+    {
+      name: 'Action',
+      selector: row => actionButton(row),
+      sortable: true,
+    },
+
+  ];
+
+
+  const showDeleteConfirm = (id, name) => {
+    confirm({
+      title: `Are you sure delete this Subject?`,
+      icon: <ExclamationCircleFilled />,
+      content: name,
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      async onOk() {
+        await  http.delete(`${process.env.NEXT_PUBLIC_DOMAIN}/api/delete/${id}`);
+  
+
+        fetchItemList();
+      },
+      onCancel() {
+        console.log('Cancel');
+      },
+    });
+  };
+
+
+
+  const actionButton = (row) => {
+    return (
+      <>
+        <Row justify="space-between" style={{ display: 'flex', alignItems: 'center' }}>
+          <a style={{ color: 'green' }}>
+            <EyeOutlined style={{ fontSize: '22px' }} />
+          </a>
+
+          <a onClick={() => handleOpen(row)} className="text-primary" >
+            <EditOutlined style={{ fontSize: '22px' }} />
+          </a>
+
+          <a onClick={() => showDeleteConfirm(row.id, row.name)} className="text-danger" >
+            <DeleteOutlined style={{ fontSize: '22px' }} />
+          </a>
+        </Row>
+      </>
+    );
+  };
+
+
+  useEffect(() => {
+    let controller = new AbortController();
+    const result = data?.filter((item) => {
+      return item.name.toLowerCase().match(search.toLocaleLowerCase())
+    });
+
+    setProductList(result);
+    return () => controller.abort();
+  }, [search])
+
+
+
+  // product added
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editData, setEditData] = useState({});
+  const handleShow = () => {
+    setIsModalOpen(true)
+    setEditData(null);
+  };
+
+
+
+  //product update
+  const handleOpen = (data) => {
+    setEditData(data);
+    setIsModalOpen(true)
+  }
+
+
   return (
     <>
-      <Row justify="space-between" style={{ display: 'flex', alignItems: 'center' }}>
-        <a  style={{ color: 'green' }}>
-          <EyeOutlined style={{ fontSize: '22px' }} />
-        </a>
-
-        <a  className="text-primary" >
-          <EditOutlined style={{ fontSize: '22px' }} />
-        </a>
-
-        <a  className="text-danger" >
-          <DeleteOutlined style={{ fontSize: '22px' }} />
-        </a>
-      </Row>
-    </>
-  );
-};
-
-
-
-  return (
-   <>
       <Content className="custom-content">
         <div className="responsive-fixed-container">
           <div style={{ padding: '15px', background: colorBgContainer }}>
@@ -120,9 +177,9 @@ const actionButton = (row) => {
                         <Button
                           className="shadow rounded"
                           type="primary"
-                          // onClick={handleShow}
+                          onClick={handleShow}
                           block
-                          style={{backgroundColor: "#007bff",color: "#fff",}}
+                          style={{ backgroundColor: "#007bff", color: "#fff", }}
                         >
                           <span >Add</span>
                           <span className="button-icon-space ml-5">
@@ -136,17 +193,32 @@ const actionButton = (row) => {
 
 
 
+                    <ProductForm
+                      isModalOpen={isModalOpen}
+                      setIsModalOpen={setIsModalOpen}
+                      isParentRender={reFetchHandler}
+                      setEditData={editData}
+                    />
 
                     <Content>
-                    <Table
+
+                      <DataTable
                         columns={columns}
-                        dataSource={productList}
-                        scroll={{ x: 'max-content' }}
-                        // pagination={pagination}
-                        // onChange={onChange}
-
+                        data={productList}
+                        pagination
+                        highlightOnHover
+                        subHeader
+                        subHeaderComponent={
+                          <input
+                            type="text"
+                            placeholder="search by reg no"
+                            className="w-25 form-control"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                          />
+                        }
+                        striped
                       />
-
 
                     </Content>
                   </div>
@@ -161,7 +233,7 @@ const actionButton = (row) => {
 
 
       </Content>
-   </>
+    </>
   )
 }
 

@@ -29,33 +29,33 @@ export default function App() {
   const { token } = useToken();
   const screens = useBreakpoint();
 
-  const onFinish = async(values) => {
-    console.log(`${process.env.NEXT_PUBLIC_DOMAIN}/auth/login`, values);
+  const onFinish = async (values) => {
+    console.log(`${process.env.NEXT_PUBLIC_DOMAIN}/login`, values);
     notify("info", "Checking...!");
-    await http.post(`${process.env.NEXT_PUBLIC_DOMAIN}/api/login`,{email:email, password:password}).then((res)=>{
-      console.log(res.data.user);
-      const result = res.data?.user;
-      const user={
-        id:result?.id,
-        name:result?.name,
-        email:result?.email
-      }
-      saveToken(user, res.data.token);
-    })
-    .catch((e)=>{
-      const msg = e.response?.data;
-      // console.log(msg);
-
-       if(typeof(msg) == 'string'){
-        notify("error", `${e.response.data}`);
-       }
-       else{
-        if(msg?.email){
-          notify("error", `${msg.email.Email}`);
+    await http.post(`${process.env.NEXT_PUBLIC_DOMAIN}/api/login`, { email, password })
+      .then((res) => {
+        console.log(res.data.user);
+        const result = res.data?.user;
+        const user = {
+          id: result?.id,
+          name: result?.name,
+          email: result?.email,
+        };
+        saveToken(user, res.data.token);
+      })
+      .catch((e) => {
+        const msg = e.response?.data;
+  
+        if (typeof msg === 'string') {
+          notify("error", `${e.response.data}`);
+        } else {
+          if (msg?.email) {
+            notify("error", `${msg.email.Email}`);
+          }
         }
-       }
-    });
+      });
   };
+  
 
   const styles = {
     container: {

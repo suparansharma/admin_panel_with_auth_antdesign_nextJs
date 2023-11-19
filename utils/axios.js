@@ -38,14 +38,14 @@ export default function Axios() {
       setToken(storeToken);
       setUser(storeUser);
 
-      router.replace("/profile/user/", "/dashboard");
+      router.replace("/", "/");
 
     }
   }
 
   function logout(){
     localStorage.clear();
-     router.replace("/profile/user/", "/user/login");
+     router.replace("/login", "/login");
   }
 
     const http = axios.create({
