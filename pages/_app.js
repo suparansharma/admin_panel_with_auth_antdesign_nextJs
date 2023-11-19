@@ -2,6 +2,7 @@ import MainLayout from '../components/MainLayout';
 import '../styles/globals.css';
 import UserContext from '../components/context/userContext';
 import 'react-toastify/dist/ReactToastify.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { Slide,ToastContainer } from "react-toastify";
 import Login from "./login";
 import Axios from '../utils/axios';
