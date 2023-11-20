@@ -2,8 +2,16 @@
 import React from 'react';
 import { Button, Space } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined, LogoutOutlined } from '@ant-design/icons';
+import { useRouter } from 'next/router';
 
 const CustomHeader = ({ collapsed, onToggleCollapse }) => {
+  const router = useRouter();
+  const onLogout = async () => {
+// console.log("click");
+    localStorage.clear();
+    await router.replace("/");
+    await router.reload();
+  }
   return (
     <div
       style={{
@@ -29,20 +37,21 @@ const CustomHeader = ({ collapsed, onToggleCollapse }) => {
         />
       </Space>
       <Space>
-        <Button
-          type="text"
-          icon={<LogoutOutlined />}
-          onClick={() => {
-            // Handle logout logic here
-          }}
-          style={{
-            fontSize: '16px',
-            width: 64,
-            height: 64,
-          }}
-        >
-          Logout
-        </Button>
+      <Button
+  type="text"
+  icon={<LogoutOutlined />}
+  onClick={async () => {
+    await onLogout(); // Call the onLogout function and wait for it to complete
+  }}
+  style={{
+    fontSize: '16px',
+    width: 64,
+    height: 64,
+  }}
+>
+  Logout
+</Button>
+
       </Space>
     </div>
   );

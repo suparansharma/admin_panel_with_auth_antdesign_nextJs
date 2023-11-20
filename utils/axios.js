@@ -38,7 +38,9 @@ export default function Axios() {
       setToken(storeToken);
       setUser(storeUser);
 
-      router.replace("/", "/");
+      // router.replace("/dashbord", "/dashbord");
+      router.replace("/dashbord")
+      router.reload();
 
     }
   }

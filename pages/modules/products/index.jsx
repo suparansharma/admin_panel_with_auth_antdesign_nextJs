@@ -12,6 +12,7 @@ const Products = () => {
     token: { colorBgContainer },
   } = theme.useToken();
   const { Content } = Layout;
+  const { confirm } = Modal;
 
   const { http } = Axios();
   React.useEffect(() => {
@@ -20,7 +21,7 @@ const Products = () => {
     });
     return () => clearTimeout(timeout);
   }, []);
-
+  
   //Fetch List Data for datatable
 
   const [productList, setProductList] = useState([]);
@@ -87,35 +88,39 @@ const Products = () => {
   ];
 
 
-  const showDeleteConfirm = (id, name) => {
+  const showDeleteConfirm = async (id, name) => {
     confirm({
-      title: `Are you sure delete this Subject?`,
+      title: `Are you sure to delete this Subject?`,
       icon: <ExclamationCircleFilled />,
       content: name,
       okText: 'Yes',
       okType: 'danger',
       cancelText: 'No',
       async onOk() {
-        await  http.delete(`${process.env.NEXT_PUBLIC_DOMAIN}/api/delete/${id}`);
-  
-
-        fetchItemList();
+        try {
+          await http.delete(`${process.env.NEXT_PUBLIC_DOMAIN}/api/delete/${id}`);
+          // After the delete request is successful, call fetchItemList
+          fetchItemList();
+        } catch (error) {
+          // Handle error if the delete request fails
+          console.error('Error deleting item:', error);
+        }
       },
       onCancel() {
         console.log('Cancel');
       },
     });
   };
-
+  
 
 
   const actionButton = (row) => {
     return (
       <>
         <Row justify="space-between" style={{ display: 'flex', alignItems: 'center' }}>
-          <a style={{ color: 'green' }}>
+          {/* <a style={{ color: 'green' }}>
             <EyeOutlined style={{ fontSize: '22px' }} />
-          </a>
+          </a> */}
 
           <a onClick={() => handleOpen(row)} className="text-primary" >
             <EditOutlined style={{ fontSize: '22px' }} />
@@ -211,7 +216,7 @@ const Products = () => {
                         subHeaderComponent={
                           <input
                             type="text"
-                            placeholder="search by reg no"
+                            placeholder="search by name"
                             className="w-25 form-control"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}

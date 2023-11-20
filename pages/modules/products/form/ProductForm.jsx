@@ -40,10 +40,12 @@ const ProductForm = (props) => {
 
     const onFinish = async (values) => {
 
-        setLoading(true);
+        // setLoading(true);
 
         if (setEditData?.id) {
             http.put(`${process.env.NEXT_PUBLIC_DOMAIN}/api/updateproduct/${setEditData?.id}`, values);
+            isParentRender(true);
+              setIsModalOpen(false);
 
           } else {
 
@@ -127,7 +129,8 @@ const ProductForm = (props) => {
                         style={{ backgroundColor: "#007bff", color: "#fff", }}
                         type="primary" htmlType="submit"
 
-                        loading={loading}>
+                        // loading={loading}
+                        >
                         Submit
                     </Button>
                 </Form.Item>
